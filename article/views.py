@@ -1,7 +1,10 @@
-# Create your views here.
 from django.shortcuts import render_to_response
 from article.models import Article
 from django.http import HttpResponse
+from forms import ArticleForm
+from django.http import HttpResponseRedirect
+from django.core.context_processors import csrf
+
 
 def articles(request):
     language = 'en-gb'
@@ -30,3 +33,20 @@ def language(request, language='en-gb'):
     request.session['lang'] = language
     
     return response
+
+def create(request):
+    if request.POST:
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+            return HttpResponseRedirect('/articles/all')
+    else:
+        form = ArticleForm()
+
+    args={}
+    args.update(csrf(request))
+
+    args['form'] = form
+
+    return render_to_response('article/create_article.html', args)
